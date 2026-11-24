@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'none'; media-src 'self' blob:; img-src 'self' data:; object-src 'none'; base-uri 'none'"><title>Interview Desk · 面试参考</title><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="layout.css"></head>
+<body>
+<header>
+<div class="brand"><span class="brand-icon">i.</span><div>INTERVIEW DESK<small>面试参考工作台</small></div></div>
+<section class="toolbar" aria-label="监听控制"><button id="listen" class="primary">▶ 开始监听</button><label class="sr-only" for="audio-source">声音来源</label><select id="audio-source" aria-label="声音来源"><option value="system">系统声音 · 对方发言</option><option value="microphone">麦克风 · 我的说话</option></select><label class="toggle"><input id="auto" type="checkbox" checked>自动回答</label><label class="toggle" title="开启后，语音断句会并入当前问题；点击“＋ 新问题”才切换到下一题"><input id="manual-questions" type="checkbox">手动分题</label><div class="audio-status"><span id="connection" class="pill">未监听</span><meter id="level" min="0" max="1" value="0" aria-label="音量"></meter></div></section>
+<div class="header-actions"><button id="phone-audio" class="phone-button" aria-pressed="false" title="通过USB连接已授权的安卓手机，将手机声音转到电脑；需要已安装scrcpy">手机音频 · 开启</button><label class="toggle"><input id="top" type="checkbox">置顶</label><button id="theme-toggle" class="quiet" type="button" aria-pressed="false" title="切换深色 / 浅色界面">🌙 深色</button><button id="settings-open" class="quiet">设置 ↗</button></div>
+</header>
+<main>
+<div id="notice" class="notice" role="status"></div>
+<section class="action-bar" aria-label="问答操作">
+<div class="action-group">
+<button id="new-question" class="quiet" title="新建空白问题，保留历史记录">＋ 新问题</button>
+<button id="answer" class="primary" title="生成或重新生成当前问题的参考回答">立即回答</button>
+<button id="merge-answer" class="quiet" title="与上一题合并为完整问题并立即回答">合并并回答</button>
+</div>
+<div class="action-group answer-actions">
+<button id="stop-answer" class="quiet" disabled>停止生成</button>
+<button id="expand" class="quiet">展开回答 ↗</button>
+</div>
+</section>
+<div class="workspace">
+<aside><div class="aside-head"><h2>本次问题</h2><span id="count" class="count-pill">00</span></div><div id="history" class="history"><div class="history-empty">暂无问题</div></div><div class="aside-actions"><button id="undo-delete" class="quiet" disabled title="恢复最近删除的问题">↶ 撤销</button><button id="export" class="quiet" title="导出本次参考记录">↓ 导出</button></div></aside>
+<article>
+<section class="question-panel"><div class="panel-heading"><h2>当前提问</h2><div class="question-tools"><span id="question-state" class="question-state"></span><select id="language" aria-label="提问语言"><option value="auto">自动判断语言</option><option value="zh">中文 · 仅中文回答</option><option value="en">English · 双语回答</option></select></div></div><label class="sr-only" for="question">当前问题</label><textarea id="question" placeholder="输入问题，或开始监听…" maxlength="20000"></textarea></section>
+<section class="answer-panel"><div class="panel-heading"><h2>回答思路</h2><div class="answer-tools"><span id="answer-status" class="answer-status"></span><span id="latency" class="latency"></span><label for="font-size" class="sr-only">回答字号</label><select id="font-size" aria-label="回答字号"><option value="16">字号 小</option><option value="19" selected>字号 中</option><option value="23">字号 大</option><option value="28">字号 特大</option></select></div></div><div id="response" class="response" aria-live="off"><div class="answer-empty">暂无参考答案</div></div></section>
+</article></div>
+</main>
+<dialog id="settings-dialog"><form id="settings-form"><div class="dialog-heading"><h2>工作台设置</h2><button type="button" id="settings-close" class="quiet" aria-label="关闭设置">✕</button></div><fieldset><legend>回答服务 · DeepSeek / OpenAI 兼容</legend><label>接口地址（Base URL）<input id="baseUrl" maxlength="500" placeholder="留空默认 https://api.deepseek.com"></label><label>API Key<input id="deepseekKey" type="password" autocomplete="off" placeholder="填写 API Key（本地兼容服务可留空）"></label><label class="toggle"><input id="clear_deepseekKey" type="checkbox">清除已保存的接口密钥</label><label>模型名称<input id="model" value="deepseek-flash" required maxlength="120"></label></fieldset><fieldset><legend>实时语音 · 阿里云百炼</legend><label>API Key<input id="asrKey" type="password" autocomplete="off" placeholder="填写百炼 API Key"></label><label class="toggle"><input id="clear_asrKey" type="checkbox">清除已保存的百炼密钥</label><label>语音模型名称<input id="asrModel" maxlength="120" placeholder="留空默认 fun-asr-realtime"></label><div class="form-grid"><label>业务空间 ID<input id="workspace" maxlength="120" placeholder="Workspace ID"></label><label>地域<select id="region"><option value="beijing">华北 2 · 北京</option><option value="singapore">新加坡</option></select></label><label>静音断句 / 毫秒<input id="silenceMs" type="number" min="200" max="6000" step="100" value="800" required></label><label>句末合并等待 / 毫秒<input id="mergeMs" type="number" min="0" max="2000" step="50" value="200" required></label></div></fieldset><fieldset><legend>个人背景</legend><label>个人经历与项目要点<textarea id="profile" rows="5" maxlength="20000" placeholder="学习/工作经历、做过的项目、负责部分与成果"></textarea></label><label>目标岗位与要求<textarea id="role" rows="3" maxlength="20000" placeholder="岗位名称、职责或 JD"></textarea></label></fieldset><p id="settings-error" role="alert"></p><div class="dialog-footer"><button class="primary" type="submit">保存设置</button></div></form></dialog>
+<script src="answer-view.js"></script><script src="renderer.js"></script></body></html>

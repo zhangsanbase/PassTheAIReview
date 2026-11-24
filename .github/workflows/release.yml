@@ -1,0 +1,49 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+      - run: npm test
+      - run: npm run smoke
+      - run: npm run build:win
+
+      - name: Verify built binary and generate SHA-256
+        shell: pwsh
+        run: |
+          $exe = Get-ChildItem -Path dist -Recurse -Filter InterviewDesk.exe | Select-Object -First 1
+          if (-not $exe) { throw 'InterviewDesk.exe not found in dist' }
+          $p = Start-Process -FilePath $exe.FullName -ArgumentList '--smoke' -Wait -PassThru
+          if ($p.ExitCode -ne 0) { throw "Built binary smoke check failed with exit code $($p.ExitCode)" }
+
+          $zip = Get-ChildItem -Path dist -Filter '*.zip' | Select-Object -First 1
+          if (-not $zip) { throw 'Portable zip not found in dist' }
+          $hash = (Get-FileHash -Path $zip.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$hash  $($zip.Name)" | Set-Content -Path (Join-Path dist 'SHA256SUMS.txt') -Encoding utf8
+          Get-Content (Join-Path dist 'SHA256SUMS.txt')
+
+      - name: Create GitHub Release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = $env:GITHUB_REF_NAME
+          $zip = (Get-ChildItem -Path dist -Filter '*.zip' | Select-Object -First 1).FullName
+          $sums = Join-Path dist 'SHA256SUMS.txt'
+          gh release create $tag $zip $sums --verify-tag --title $tag --generate-notes

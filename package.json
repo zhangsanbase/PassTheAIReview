@@ -1,0 +1,9 @@
+{
+  "name": "interview-desk", "version": "0.1.0", "private": true,
+  "license": "PolyForm-Noncommercial-1.0.0",
+  "description": "Personal Windows interview reference desk",
+  "main": "src/main.js",
+  "scripts": { "start": "electron .", "test": "node --test", "build:win": "node scripts/build-win.js", "smoke": "electron . --smoke", "smoke:audio": "electron . --smoke --capture-smoke", "smoke:mic": "electron . --smoke --microphone-smoke", "smoke:layout": "electron . --smoke --layout-smoke", "smoke:instance": "electron . --smoke --instance-smoke" },
+  "dependencies": { "ws": "^8.18.0" },
+  "devDependencies": { "electron": "^44.0.0" }
+}
